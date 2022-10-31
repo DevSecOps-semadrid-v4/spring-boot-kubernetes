@@ -34,3 +34,8 @@ steps:
     effectivePomSkip: false
     sonarQubeRunAnalysis: true
     sqMavenPluginVersionChoice: 'latest'
+    
+- task: sonarcloud-buildbreaker@2
+  inputs:
+    SonarCloud: 'sonarCloud'
+    organization: 'devsecops-semadrid-v4'
