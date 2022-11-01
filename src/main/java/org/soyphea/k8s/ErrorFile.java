@@ -1,26 +1,19 @@
-package com.ecodeup.errores;
+package org.soyphea.k8s.srevice;
 
-public class TestErrores {
+import org.soyphea.k8s.domain.User;
+import org.springframework.stereotype.Service;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		// errores en tiempo de copilación
-		int suma=0;
-		String nombre;
-    String password:
-    password='12345':
-		suma=nombre; //error 1
-		
-		int valor=0;
-		short numero=0;
-		numero=valor; //error 2
-		
-		String valor=""; //error 3
-		
-		int mayor;
-        int menor;
-		if (true){
-			mayor=menor;//error 4
-		}
-	}
+@Service
+public class UserServiceError {
+
+    List<User> users = Arrays.asList(new User(1, "Dara"), new User(2, "Seyha"));
+
+    public List<User> getUser(String containName) {
+
+        return users.stream().filter(user -> user.getName().contains(containName)).collect(Collectors.toList());
+    }
+
 }
