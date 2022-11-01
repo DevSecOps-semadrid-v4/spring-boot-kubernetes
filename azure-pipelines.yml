@@ -48,7 +48,7 @@ stages:
 
 - stage: OWASP
   jobs:
-    - job: Dependency-Check
+    - job: OWASP
       steps:
       - task: dependency-check-build-task@6
         inputs:
@@ -57,9 +57,9 @@ stages:
           format: 'HTML'
         displayName: 'Dependency Check OWASP'
         
-- stage: Container-Security
+- stage: ContainerSecurity
   jobs:
-    - job: Container-Security
+    - job: ContainerSecurity
       steps:
       - task: DockerInstaller@0
         inputs:
