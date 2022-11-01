@@ -1,44 +1,44 @@
 pool:
-    vmImage: ubuntu-latest
-    stages:
-        - stage: Build
-          jobs:
-              - job: build
-                displayName: 'Build'
-                steps:
-                    - task: Maven@4
-                      inputs:
-                          mavenPomFile: 'pom.xml'
-                          task: 'Build Maven'
-                          publishJUnitResults: true
-                          testResultsFiles: '**/surefire-reports/TEST-*.xml'
-                          javaHomeOption: 'JDKVersion'
-                          mavenVersionOption: 'Default'
-                          mavenAuthenticateFeed: false
-                          effectivePomSkip: false
-                          sonarQubeRunAnalysis: false
+  vmImage: ubuntu-latest
+stages:
+- stage: Build
+  jobs:
+      - job: build
+        displayName: 'Build'
+        steps:
+            - task: Maven@4
+              inputs:
+                  mavenPomFile: 'pom.xml'
+                  task: 'Build Maven'
+                  publishJUnitResults: true
+                  testResultsFiles: '**/surefire-reports/TEST-*.xml'
+                  javaHomeOption: 'JDKVersion'
+                  mavenVersionOption: 'Default'
+                  mavenAuthenticateFeed: false
+                  effectivePomSkip: false
+                  sonarQubeRunAnalysis: false
 
-        - stage: Sonar
-          jobs:
-            - job: SonarCloud
-              steps:
-              - task: SonarCloudPrepare@1
-                inputs:
-                  SonarCloud: 'sonarCloud'
-                  organization: 'devsecops-semadrid-v4'
-                  projectKey: 'DevSecOps-semadrid-v4_spring-boot-kubernetes'
-                  projectName: 'spring-boot-kubernetes'
-                displayName: 'Prepare SonarCloud'
-              - task: Maven@4
-                inputs:
-                    mavenPomFile: 'pom.xml'
-                    task: 'sonarqube'
-                    publishJUnitResults: true
-                    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-                    javaHomeOption: 'JDKVersion'
-                    mavenVersionOption: 'Default'
-                    mavenAuthenticateFeed: false
-                    effectivePomSkip: false
-                    sonarQubeRunAnalysis: true
-                    sqMavenPluginVersionChoice: 'latest'
-                displayName: 'Sonarqube'
+- stage: Sonar
+  jobs:
+    - job: SonarCloud
+      steps:
+      - task: SonarCloudPrepare@1
+        inputs:
+          SonarCloud: 'sonarCloud'
+          organization: 'devsecops-semadrid-v4'
+          projectKey: 'DevSecOps-semadrid-v4_spring-boot-kubernetes'
+          projectName: 'spring-boot-kubernetes'
+        displayName: 'Prepare SonarCloud'
+      - task: Maven@4
+        inputs:
+            mavenPomFile: 'pom.xml'
+            task: 'sonarqube'
+            publishJUnitResults: true
+            testResultsFiles: '**/surefire-reports/TEST-*.xml'
+            javaHomeOption: 'JDKVersion'
+            mavenVersionOption: 'Default'
+            mavenAuthenticateFeed: false
+            effectivePomSkip: false
+            sonarQubeRunAnalysis: true
+            sqMavenPluginVersionChoice: 'latest'
+        displayName: 'Sonarqube'
