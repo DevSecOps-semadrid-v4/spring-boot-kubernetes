@@ -40,39 +40,3 @@ steps:
     SonarCloud: 'sonarCloud'
     organization: 'devsecops-semadrid-v4'
 
-- task: dependency-check-build-task@6
-  inputs:
-    projectName: 'spring-boot-kubernetes'
-    scanPath: '$(Pipeline.Workspace)'
-    format: 'HTML'
-
-- task: DockerInstaller@0
-  inputs:
-    dockerVersion: '17.09.0-ce'
-
-- task: Docker@2
-  inputs:
-    containerRegistry: 'Docker'
-    command: 'login'
-
-- task: Docker@2
-  inputs:
-    containerRegistry: 'Docker'
-    command: 'build'
-    Dockerfile: '**/Dockerfile'
-    tags: 'latest'
-
-- script: | 
-    sudo apt-get install -y rpm
-    wget https://github.com/aquasecurity/trivy/releases/download/v0.27.1/trivy_0.27.1_Linux-64bit.deb
-    sudo dpkg -i trivy_0.27.1_Linux-64bit.deb
-    trivy image semadrid/spring-boot-kubernete:latest
-  displayName: Image Scan
-
-- task: Docker@2
-  inputs:
-    containerRegistry: 'Docker'
-    repository: 'semadrid/spring-boot-kubernete'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
-    tags: 'latest'
