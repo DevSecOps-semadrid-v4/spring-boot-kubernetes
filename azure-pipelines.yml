@@ -1,19 +1,78 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
-trigger:
-- master
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: Maven@4
+  inputs:
+    mavenPomFile: 'pom.xml'
+    task: 'Build Maven'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    mavenVersionOption: 'Default'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: false
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: SonarCloudPrepare@1
+  inputs:
+    SonarCloud: 'sonarCloud'
+    organization: 'devsecops-semadrid-v4'
+    projectKey: 'DevSecOps-semadrid-v4_spring-boot-kubernetes'
+    projectName: 'spring-boot-kubernetes'
+
+- task: Maven@4
+  inputs:
+    mavenPomFile: 'pom.xml'
+    task: 'sonarqube'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    mavenVersionOption: 'Default'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: true
+    sqMavenPluginVersionChoice: 'latest'
+    
+- task: sonarcloud-buildbreaker@2
+  inputs:
+    SonarCloud: 'sonarCloud'
+    organization: 'devsecops-semadrid-v4'
+
+- task: dependency-check-build-task@6
+  inputs:
+    projectName: 'spring-boot-kubernetes'
+    scanPath: '$(Pipeline.Workspace)'
+    format: 'HTML'
+
+- task: DockerInstaller@0
+  inputs:
+    dockerVersion: '17.09.0-ce'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'Docker'
+    command: 'login'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'Docker'
+    command: 'build'
+    Dockerfile: '**/Dockerfile'
+    tags: 'latest'
+
+- script: | 
+    sudo apt-get install -y rpm
+    wget https://github.com/aquasecurity/trivy/releases/download/v0.27.1/trivy_0.27.1_Linux-64bit.deb
+    sudo dpkg -i trivy_0.27.1_Linux-64bit.deb
+    trivy image semadrid/spring-boot-kubernete:latest
+  displayName: Image Scan
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'Docker'
+    repository: 'semadrid/spring-boot-kubernete'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    tags: 'latest'
