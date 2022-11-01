@@ -40,3 +40,9 @@ steps:
     SonarCloud: 'sonarCloud'
     organization: 'devsecops-semadrid-v4'
 
+
+- task: dependency-check-build-task@6
+  inputs:
+    projectName: 'spring-boot-kubernetes'
+    scanPath: '$(Pipeline.Workspace)'
+    format: 'HTML'
