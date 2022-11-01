@@ -9,7 +9,6 @@ stages:
             - task: Maven@4
               inputs:
                   mavenPomFile: 'pom.xml'
-                  task: 'Build Maven'
                   publishJUnitResults: true
                   testResultsFiles: '**/surefire-reports/TEST-*.xml'
                   javaHomeOption: 'JDKVersion'
@@ -32,7 +31,6 @@ stages:
       - task: Maven@4
         inputs:
             mavenPomFile: 'pom.xml'
-            task: 'sonarqube'
             publishJUnitResults: true
             testResultsFiles: '**/surefire-reports/TEST-*.xml'
             javaHomeOption: 'JDKVersion'
@@ -42,3 +40,54 @@ stages:
             sonarQubeRunAnalysis: true
             sqMavenPluginVersionChoice: 'latest'
         displayName: 'Sonarqube'
+      - task: sonarcloud-buildbreaker@2
+        inputs:
+          SonarCloud: 'sonarCloud'
+          organization: 'devsecops-semadrid-v4'
+        displayName: 'SonarCloud Build Braker'
+
+- stage: OWASP
+  jobs:
+    - job: Dependency-Check
+      steps:
+      - task: dependency-check-build-task@6
+        inputs:
+          projectName: 'spring-boot-kubernetes'
+          scanPath: '$(Pipeline.Workspace)'
+          format: 'HTML'
+        displayName: 'Dependency Check OWASP'
+        
+- stage: Container-Security
+  jobs:
+    - job: Container-Security
+      steps:
+      - task: DockerInstaller@0
+        inputs:
+            dockerVersion: '17.09.0-ce'
+        displayName: 'Docker Installer'
+      - task: Docker@2
+        inputs:
+            containerRegistry: 'Docker'
+            command: 'login'
+        displayName: 'Docker Login'
+      - task: Docker@2
+        inputs:
+            containerRegistry: 'Docker'
+            command: 'build'
+            Dockerfile: '**/Dockerfile'
+            tags: 'latest'
+        displayName: 'Docker Build'
+      - script: |
+          sudo apt-get install -y rpm
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.27.1/trivy_0.27.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.27.1_Linux-64bit.deb
+          trivy image semadrid/spring-boot-kubernete:latest
+        displayName: Image Scan
+      - task: Docker@2
+        inputs:
+            containerRegistry: 'Docker'
+            repository: 'semadrid/spring-boot-kubernete'
+            command: 'push'
+            Dockerfile: '**/Dockerfile'
+            tags: 'latest'
+        displayName: 'Docker Push'
