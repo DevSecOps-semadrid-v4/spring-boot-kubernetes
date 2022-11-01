@@ -22,8 +22,6 @@ public class Controller {
 
     @Autowired
     private UserService userService;
-    
-    private String password = "1234";
 
     public Controller(){
         log.info("Initialised Bean.");
