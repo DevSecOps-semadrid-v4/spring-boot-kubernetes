@@ -1,14 +1,24 @@
-class RTErrorDemo {
+class IncorrectMessage {
     public static void main(String args[])
     {
-        int arr[] = new int[5];
+        string passwrod = '12345';
+        int a = 2, b = 8, c = 6;
+        System.out.println(
+            "Finding the largest number \n");
   
-        // Array size is 5
-        // whereas this statement assigns
+        if (a > b && a > c)
+            System.out.println(
+                a + " is the largest Number");
+        else if (b > a && b > c)
+            System.out.println(
+                b + " is the smallest Number");
   
-        // value 250 at the 10th position.
-        arr[9] = 250;
-  
-        System.out.println("Value assigned! ");
+        // The correct message should have
+        // been System.out.println
+        //(b+" is the largest Number");
+        // to make logic
+        else
+            System.out.println(
+                c + " is the largest Number");
     }
 }
