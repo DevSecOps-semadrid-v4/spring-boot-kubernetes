@@ -16,6 +16,18 @@ stages:
                   mavenAuthenticateFeed: false
                   effectivePomSkip: false
                   sonarQubeRunAnalysis: false
+            - task: CopyFiles@2
+              inputs:
+                sourceFolder: '$(Build.SourcesDirectory)'
+                contents: |
+                    **/build/libs/*.jar
+                targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+            - task: PublishBuildArtifacts@1
+              inputs:
+                pathToPublish: '$(Build.ArtifactStagingDirectory)'
+                artifactName: appJar
+                publishLocation: 'Container'
 
 - stage: Sonar
   jobs:
@@ -61,15 +73,28 @@ stages:
   jobs:
     - job: ContainerSecurity
       steps:
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'current'
+          downloadType: 'single'
+          artifactName: 'appJar'
+          downloadPath: '$(Pipeline.Workspace)'
+        displayName: Descarga Jar
+  
+      - script: "mkdir -p build/libs; mv $(Pipeline.Workspace)/appJar/build/libs/ build/; chmod -R 555 build/libs"  
+        displayName:  Se mueve JAR a carpeta raiz
+      
       - task: DockerInstaller@0
         inputs:
             dockerVersion: '17.09.0-ce'
         displayName: 'Docker Installer'
+     
       - task: Docker@2
         inputs:
             containerRegistry: 'Docker'
             command: 'login'
         displayName: 'Docker Login'
+      
       - task: Docker@2
         inputs:
             containerRegistry: 'Docker'
@@ -77,12 +102,7 @@ stages:
             Dockerfile: '**/Dockerfile'
             tags: 'latest'
         displayName: 'Docker Build'
-      - script: |
-          sudo apt-get install -y rpm
-          wget https://github.com/aquasecurity/trivy/releases/download/v0.27.1/trivy_0.27.1_Linux-64bit.deb
-          sudo dpkg -i trivy_0.27.1_Linux-64bit.deb
-          trivy image semadrid/spring-boot-kubernete:latest
-        displayName: Image Scan
+      
       - task: Docker@2
         inputs:
             containerRegistry: 'Docker'
@@ -91,3 +111,10 @@ stages:
             Dockerfile: '**/Dockerfile'
             tags: 'latest'
         displayName: 'Docker Push'
+      
+      - script: |
+          sudo apt-get install -y rpm
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.27.1/trivy_0.27.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.27.1_Linux-64bit.deb
+          trivy image semadrid/spring-boot-kubernete:latest
+        displayName: Image Scan
