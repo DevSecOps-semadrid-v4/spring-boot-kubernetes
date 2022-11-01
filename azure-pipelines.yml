@@ -60,5 +60,11 @@ steps:
     containerRegistry: 'Docker'
     command: 'build'
     Dockerfile: '**/Dockerfile'
-    tags: 'lasted'
+    tags: 'latest'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'Docker'
+    command: 'push'
+    tags: 'latest'
 
